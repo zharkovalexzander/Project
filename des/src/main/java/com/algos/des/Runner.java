@@ -17,9 +17,9 @@ public class Runner {
         Bits rS = IP.getRightHalf();
         long key = 0x133457799BBCDFF1L;
         Key key1 = new Key(Bits.valueOf(key));
-        Bits functionResult = new Bits();
+        Bits functionResult;
         for (int i = 0; i < 16; i++) {
-            List<Bits> splitted = new LinkedList<>();
+            functionResult = new Bits();
             Bits e = Bits.permute(rS, Permutation.E_BIT_SELECTION);
             Bits func = e.xor(key1.getKey(i));
             for (int j = 0; j < 48; j += 6) {
@@ -34,7 +34,7 @@ public class Runner {
             /*System.out.println(lS);
             System.out.println(rS);*/
         }
-       // Bits b = rS.merge(lS);
-        System.out.println(lS);
+        Bits merged = rS.merge(lS);
+        System.out.println(String.format("0x%08X", Bits.permute(merged, Permutation.FINAL_PERMUTATION).toLong()));
     }
 }
