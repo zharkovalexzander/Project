@@ -1,5 +1,9 @@
 package com.algos.des;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.*;
 
@@ -31,6 +35,29 @@ public class Bits {
         return new Bits(list);
     }
 
+    public static Bits valueOf(String value) throws DecoderException {
+        List<Integer> list = new LinkedList<>();
+        byte[] stringInBytes = value.getBytes();
+        String hexed = Hex.encodeHexString(stringInBytes);
+        int trailingZeroes = hexed.length() % 16;
+        trailingZeroes = (trailingZeroes == hexed.length()) ? hexed.length() : trailingZeroes;
+        if(trailingZeroes != 0) {
+            for (int i = 0; i < (16 - trailingZeroes); ++i) {
+                hexed += "0";
+            }
+        }
+        System.out.println(hexed);
+        for(int i = 0; i < hexed.length(); i += 16) {
+            byte[] bytes = Hex.decodeHex(hexed.substring(i, i + 16).toCharArray());
+            for (byte stringInByte : bytes) {
+                for (int j = 7; j >= 0; --j) {
+                    list.add((stringInByte >> j) & 1);
+                }
+            }
+        }
+        return new Bits(list);
+    }
+
     public static Bits of(long value) {
         return new Bits(longToBits(value));
     }
@@ -54,6 +81,10 @@ public class Bits {
         }
         Collections.reverse(list);
         return list;
+    }
+
+    public int size() {
+        return this.bits.size();
     }
 
     public Integer get(int index) {
@@ -122,6 +153,15 @@ public class Bits {
             result |= this.bits.get(i);
         }
         return result;
+    }
+
+    public String toFormattedString() {
+        String a = "";
+        for(Integer i : this.bits) {
+            a += i.toString();
+        }
+        Long l = new BigInteger(a, 2).longValue();;
+        return Long.toHexString(l);
     }
 
     @Override
