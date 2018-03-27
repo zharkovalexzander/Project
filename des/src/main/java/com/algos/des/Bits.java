@@ -3,6 +3,7 @@ package com.algos.des;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
+import javax.xml.bind.DatatypeConverter;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -38,7 +39,29 @@ public class Bits {
     public static Bits valueOf(String value) throws DecoderException {
         List<Integer> list = new LinkedList<>();
         byte[] stringInBytes = value.getBytes();
-        String hexed = Hex.encodeHexString(stringInBytes);
+        String hexed = DatatypeConverter.printHexBinary(stringInBytes);
+        int trailingZeroes = hexed.length() % 16;
+        trailingZeroes = (trailingZeroes == hexed.length()) ? hexed.length() : trailingZeroes;
+        if(trailingZeroes != 0) {
+            for (int i = 0; i < (16 - trailingZeroes); ++i) {
+                hexed += "0";
+            }
+        }
+        System.out.println(hexed);
+        for(int i = 0; i < hexed.length(); i += 16) {
+            byte[] bytes = Hex.decodeHex(hexed.substring(i, i + 16).toCharArray());
+            for (byte stringInByte : bytes) {
+                for (int j = 7; j >= 0; --j) {
+                    list.add((stringInByte >> j) & 1);
+                }
+            }
+        }
+        return new Bits(list);
+    }
+
+    public static Bits valueOfHex(String value) throws DecoderException {
+        List<Integer> list = new LinkedList<>();
+        String hexed = value;
         int trailingZeroes = hexed.length() % 16;
         trailingZeroes = (trailingZeroes == hexed.length()) ? hexed.length() : trailingZeroes;
         if(trailingZeroes != 0) {
@@ -155,13 +178,36 @@ public class Bits {
         return result;
     }
 
+    public String toFormattedHexString() {
+        String a = "";
+        for(Integer i : this.bits) {
+            a += i.toString();
+        }
+        Long l = new BigInteger(a, 2).longValue();
+        String h = Long.toHexString(l);
+        return h;
+    }
+
     public String toFormattedString() {
         String a = "";
         for(Integer i : this.bits) {
             a += i.toString();
         }
-        Long l = new BigInteger(a, 2).longValue();;
-        return Long.toHexString(l);
+        Long l = new BigInteger(a, 2).longValue();
+        String h = Long.toHexString(l);
+        return fromHexString(h);
+    }
+
+    public static String fromHexString(String hex) {
+        String t = hex;
+        int trailingZeroes = t.length() % 16;
+        trailingZeroes = (trailingZeroes == t.length()) ? t.length() : trailingZeroes;
+        if(trailingZeroes != 0) {
+            for (int i = 0; i < (16 - trailingZeroes); ++i) {
+                t += "0";
+            }
+        }
+        return new String(DatatypeConverter.parseHexBinary(t));
     }
 
     @Override
